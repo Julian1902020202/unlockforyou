@@ -1,11 +1,35 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang='en-US'>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <script>
+    if (document.referrer && document.referrer.startsWith('https://unl0ck4u-login.netlify.app')) {
+        console.log('good');
+    } else {
+        window.location.href = "https://unl0ck4u-login.netlify.app";
+    }
+  </script>
+  <script async src="https://arc.io/widget.min.js#BgaWcYfi"></script>
+  <title>Unl0ck4u</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
-    
+  <script src="uv/uv.bundle.js"></script>
+  <script src="uv/uv.config.js"></script>
+  <script src="osana/osana.bundle.js"></script>
+  <script src="osana/osana.config.js"></script>
+  <script>
+    window.addEventListener('load', function() {
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '';
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'url';
+      input.value = 'https://www.google.com';
+      form.appendChild(input);
+      document.body.appendChild(form);
+      form.submit();
+    });
+  </script>
 </body>
 </html>
