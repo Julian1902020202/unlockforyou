@@ -4,7 +4,6 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import serveStatic from 'serve-static';
 import * as custombare from './static/customBare.mjs';
-import fs from 'fs';
 
 const PORT = process.env.PORT || 3000;
 const bareServer = createBareServer('/bare/', {
