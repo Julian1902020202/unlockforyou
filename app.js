@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import serveStatic from 'serve-static';
 import * as custombare from './static/customBare.mjs';
+import fs from 'fs';
 
 const PORT = process.env.PORT || 3000;
 const bareServer = createBareServer('/bare/', {
@@ -28,23 +29,32 @@ server.on('request', (request, response) => {
     if (bareServer.shouldRoute(request)) {
       bareServer.routeRequest(request, response);
     } else {
-      if (request.url === '/google.com') {
-        response.writeHead(200, {
-          "Content-Type": "text/html"
+      if (request.url === '/google') {
+        serve(request, response, err => {
+          if (err) {
+            response.writeHead(err?.statusCode || 500, null, {
+              "Content-Type": "text/plain"
+            });
+            response.end(err?.stack);
+          } else {
+            // Read the custom JavaScript file
+            fs.readFile(join(dirname(fileURLToPath(import.meta.url)), 'static/customScript.js'), 'utf8', (err, customScript) => {
+              if (err) {
+                response.writeHead(500, {
+                  "Content-Type": "text/plain"
+                });
+                response.end('Failed to load custom script');
+              } else {
+                // Modify the response to include the custom script
+                response.writeHead(200, {
+                  "Content-Type": "text/html"
+                });
+                response.write(`<script>${customScript}</script>`);
+                response.end();
+              }
+            });
+          }
         });
-        response.end(`
-          <!DOCTYPE html>
-          <html lang="en">
-          <head>
-            <meta charset="UTF-8">
-            <meta http-equiv="refresh" content="0; url=https://www.google.com">
-            <title>Redirecting...</title>
-          </head>
-          <body>
-            <p>If you are not redirected automatically, follow this <a href="https://www.google.com">link to Google</a>.</p>
-          </body>
-          </html>
-        `);
       } else {
         serve(request, response, err => {
           response.writeHead(err?.statusCode || 500, null, {
