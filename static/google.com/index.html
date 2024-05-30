@@ -34,6 +34,7 @@
 
     function login() {
       if (checkLogin()) {
+        startProxy();
         return;
       }
       const password = "19021911181126041612";
@@ -48,7 +49,8 @@
     }
 
     function startProxy() {
-      window.location.href = "/static/google.com/index.html";
+      document.getElementById('url').value = "https://www.google.com";
+      document.getElementById('unblocker-form').submit();
     }
 
   </script>
