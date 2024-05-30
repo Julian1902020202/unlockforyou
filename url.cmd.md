@@ -1,8 +1,7 @@
-cd /path/to/your/app
 git add .
-git commit -m "Beschreibung der Änderungen"
-git push origin master 
-git push heroku master
-heroku run rake db:migrate 
+git commit -m "Update2"
+git push origin main
+heroku git:remote -a unlock4you
+git push heroku main
 
 

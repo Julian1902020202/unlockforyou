@@ -4,10 +4,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import serveStatic from 'serve-static';
 import * as custombare from './static/customBare.mjs';
-<<<<<<< HEAD
 import fs from 'fs';
-=======
->>>>>>> acfd1f41136290ca41d854cb5368db32528a913e
 
 const PORT = process.env.PORT || 3000;
 const bareServer = createBareServer('/bare/', {
@@ -32,7 +29,6 @@ server.on('request', (request, response) => {
     if (bareServer.shouldRoute(request)) {
       bareServer.routeRequest(request, response);
     } else {
-<<<<<<< HEAD
       if (request.url === '/google') {
         serve(request, response, err => {
           if (err) {
@@ -67,19 +63,10 @@ server.on('request', (request, response) => {
           response.end(err?.stack);
         });
       }
-=======
-      serve(request, response, err => {
-        response.writeHead(err?.statusCode || 500, null, {
-          "Content-Type": "text/plain"
-        })
-        response.end(err?.stack)
-      });
->>>>>>> acfd1f41136290ca41d854cb5368db32528a913e
     }
   } catch (e) {
     response.writeHead(500, "Internal Server Error", {
       "Content-Type": "text/plain"
-<<<<<<< HEAD
     });
     response.end(e.stack);
   }
@@ -90,17 +77,6 @@ server.on('upgrade', (req, socket, head) => {
     bareServer.routeUpgrade(req, socket, head);
   } else {
     socket.end();
-=======
-    })
-    response.end(e.stack)
-  }
-});
-server.on('upgrade', (req, socket, head) => {
-  if (bareServer.shouldRoute(req)) {
-  bareServer.routeUpgrade(req, socket, head);
-  } else {
-  socket.end();
->>>>>>> acfd1f41136290ca41d854cb5368db32528a913e
   }
 });
 
@@ -108,18 +84,10 @@ server.listen(PORT);
 
 if (process.env.UNSAFE_CONTINUE)
   process.on("uncaughtException", (err, origin) => {
-<<<<<<< HEAD
     console.error(`Critical error (${origin}):`);
     console.error(err);
     console.error("UNSAFELY CONTINUING EXECUTION");
     console.error();
   });
 
-=======
-    console.error(`Critical error (${origin}):`)
-    console.error(err)
-    console.error("UNSAFELY CONTINUING EXECUTION")
-    console.error()
-  })
->>>>>>> acfd1f41136290ca41d854cb5368db32528a913e
 console.log(`Server running at http://localhost:${PORT}/.`);
