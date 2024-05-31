@@ -31,18 +31,22 @@ server.on('request', (request, response) => {
     } else {
       if (request.url === '/' || request.url === '/index.html') {
         // Serve index.html
-        const indexPath = join(dirname(fileURLToPath(import.meta.url)), 'static/index.html');
-        fs.readFile(indexPath, 'utf8', (err, indexHtml) => {
+        serve(request, response, err => {
           if (err) {
-            response.writeHead(500, {
+            response.writeHead(err?.statusCode || 500, null, {
               "Content-Type": "text/plain"
             });
-            response.end('Failed to load index.html');
-          } else {
-            response.writeHead(200, {
-              "Content-Type": "text/html"
+            response.end(err?.stack);
+          }
+        });
+      } else if (request.url.startsWith('/static/')) {
+        // Serve static files
+        serve(request, response, err => {
+          if (err) {
+            response.writeHead(err?.statusCode || 500, null, {
+              "Content-Type": "text/plain"
             });
-            response.end(indexHtml);
+            response.end(err?.stack);
           }
         });
       } else {
