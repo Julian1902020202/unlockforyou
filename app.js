@@ -16,7 +16,7 @@ const serve = serveStatic(join(
   dirname(fileURLToPath(import.meta.url)),
   'static/'
 ), {
-  fallthrough: false,
+  fallthrough: true,
   maxAge: 5 * 60 * 1000
 });
 
@@ -29,38 +29,38 @@ server.on('request', (request, response) => {
     if (bareServer.shouldRoute(request)) {
       bareServer.routeRequest(request, response);
     } else {
-      if (request.url === '/google') {
-        serve(request, response, err => {
+      if (request.url === '/' || request.url === '/index.html') {
+        // Serve index.html
+        const indexPath = join(dirname(fileURLToPath(import.meta.url)), 'static/index.html');
+        fs.readFile(indexPath, 'utf8', (err, indexHtml) => {
           if (err) {
-            response.writeHead(err?.statusCode || 500, null, {
+            response.writeHead(500, {
               "Content-Type": "text/plain"
             });
-            response.end(err?.stack);
+            response.end('Failed to load index.html');
           } else {
-            // Read the custom JavaScript file
-            fs.readFile(join(dirname(fileURLToPath(import.meta.url)), 'static/customScript.js'), 'utf8', (err, customScript) => {
-              if (err) {
-                response.writeHead(500, {
-                  "Content-Type": "text/plain"
-                });
-                response.end('Failed to load custom script');
-              } else {
-                // Modify the response to include the custom script
-                response.writeHead(200, {
-                  "Content-Type": "text/html"
-                });
-                response.write(`<script>${customScript}</script>`);
-                response.end();
-              }
+            response.writeHead(200, {
+              "Content-Type": "text/html"
             });
+            response.end(indexHtml);
           }
         });
       } else {
-        serve(request, response, err => {
-          response.writeHead(err?.statusCode || 500, null, {
-            "Content-Type": "text/plain"
-          });
-          response.end(err?.stack);
+        // Serve template.html for any other URL
+        const templatePath = join(dirname(fileURLToPath(import.meta.url)), 'static/template.html');
+        fs.readFile(templatePath, 'utf8', (err, template) => {
+          if (err) {
+            response.writeHead(500, {
+              "Content-Type": "text/plain"
+            });
+            response.end('Failed to load template');
+          } else {
+            const customHTML = template.replace(/{{url}}/g, request.url);
+            response.writeHead(200, {
+              "Content-Type": "text/html"
+            });
+            response.end(customHTML);
+          }
         });
       }
     }
