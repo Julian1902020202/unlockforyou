@@ -36,10 +36,10 @@ server.on('request', (request, response) => {
           });
           response.end(err?.stack);
         } else {
-          const urlPath = new URL(request.url, `http://${request.headers.host}`).pathname;
-          const filePath = join(dirname(fileURLToPath(import.meta.url)), 'static', urlPath);
+          // Inject custom JavaScript into HTML responses
+          if (request.url.endsWith('.html')) {
+            const filePath = join(dirname(fileURLToPath(import.meta.url)), 'static', request.url);
 
-          if (fs.existsSync(filePath) && filePath.endsWith('.html')) {
             fs.readFile(filePath, 'utf8', (err, fileContent) => {
               if (err) {
                 response.writeHead(500, {
@@ -66,10 +66,7 @@ server.on('request', (request, response) => {
               }
             });
           } else {
-            response.writeHead(404, {
-              "Content-Type": "text/plain"
-            });
-            response.end('Not Found');
+            response.end();
           }
         }
       });
