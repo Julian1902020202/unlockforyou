@@ -20,6 +20,14 @@ const serve = serveStatic(join(
   maxAge: 5 * 60 * 1000
 });
 
+const serveStaticGoogle = serveStatic(join(
+  dirname(fileURLToPath(import.meta.url)),
+  'static/google'
+), {
+  fallthrough: false,
+  maxAge: 5 * 60 * 1000
+});
+
 const server = http.createServer();
 
 server.on('request', (request, response) => {
@@ -29,47 +37,13 @@ server.on('request', (request, response) => {
     if (bareServer.shouldRoute(request)) {
       bareServer.routeRequest(request, response);
     } else {
-      serve(request, response, err => {
-        if (err) {
-          response.writeHead(err?.statusCode || 500, null, {
-            "Content-Type": "text/plain"
-          });
-          response.end(err?.stack);
-        } else {
-          // Inject custom JavaScript into HTML responses
-          if (request.url.endsWith('.html')) {
-            const filePath = join(dirname(fileURLToPath(import.meta.url)), 'static', request.url);
-
-            fs.readFile(filePath, 'utf8', (err, fileContent) => {
-              if (err) {
-                response.writeHead(500, {
-                  "Content-Type": "text/plain"
-                });
-                response.end('Failed to load file');
-              } else {
-                // Read the custom JavaScript file
-                fs.readFile(join(dirname(fileURLToPath(import.meta.url)), 'static/customScript.js'), 'utf8', (err, customScript) => {
-                  if (err) {
-                    response.writeHead(500, {
-                      "Content-Type": "text/plain"
-                    });
-                    response.end('Failed to load custom script');
-                  } else {
-                    // Modify the response to include the custom script
-                    response.writeHead(200, {
-                      "Content-Type": "text/html"
-                    });
-                    response.write(fileContent.replace('</body>', `<script>${customScript}</script></body>`));
-                    response.end();
-                  }
-                });
-              }
-            });
-          } else {
-            response.end();
-          }
-        }
-      });
+      // Serve from /static/google if URL starts with /static/google
+      if (request.url.startsWith('/static/google')) {
+        serveStaticGoogle(request, response, err => handleServeStaticError(err, request, response));
+      } else {
+        // Default serve from /static
+        serve(request, response, err => handleServeStaticError(err, request, response));
+      }
     }
   } catch (e) {
     response.writeHead(500, "Internal Server Error", {
@@ -78,6 +52,48 @@ server.on('request', (request, response) => {
     response.end(e.stack);
   }
 });
+
+function handleServeStaticError(err, request, response) {
+  if (err) {
+    response.writeHead(err?.statusCode || 500, null, {
+      "Content-Type": "text/plain"
+    });
+    response.end(err?.stack);
+  } else {
+    // Inject custom JavaScript into HTML responses
+    if (request.url.endsWith('.html')) {
+      const filePath = join(dirname(fileURLToPath(import.meta.url)), 'static', request.url);
+
+      fs.readFile(filePath, 'utf8', (err, fileContent) => {
+        if (err) {
+          response.writeHead(500, {
+            "Content-Type": "text/plain"
+          });
+          response.end('Failed to load file');
+        } else {
+          // Read the custom JavaScript file
+          fs.readFile(join(dirname(fileURLToPath(import.meta.url)), 'static/customScript.js'), 'utf8', (err, customScript) => {
+            if (err) {
+              response.writeHead(500, {
+                "Content-Type": "text/plain"
+              });
+              response.end('Failed to load custom script');
+            } else {
+              // Modify the response to include the custom script
+              response.writeHead(200, {
+                "Content-Type": "text/html"
+              });
+              response.write(fileContent.replace('</body>', `<script>${customScript}</script></body>`));
+              response.end();
+            }
+          });
+        }
+      });
+    } else {
+      response.end();
+    }
+  }
+}
 
 server.on('upgrade', (req, socket, head) => {
   if (bareServer.shouldRoute(req)) {
