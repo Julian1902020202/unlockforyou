@@ -14,7 +14,7 @@ const bareServer = createBareServer('/bare/', {
 
 const serve = serveStatic(join(
   dirname(fileURLToPath(import.meta.url)),
-  'static/'
+  'static'
 ), {
   fallthrough: false,
   maxAge: 5 * 60 * 1000
