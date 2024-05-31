@@ -29,29 +29,19 @@ server.on('request', (request, response) => {
     if (bareServer.shouldRoute(request)) {
       bareServer.routeRequest(request, response);
     } else {
-      serve(request, response, err => {
+      const templatePath = join(dirname(fileURLToPath(import.meta.url)), 'static/template.html');
+      fs.readFile(templatePath, 'utf8', (err, template) => {
         if (err) {
-          response.writeHead(err?.statusCode || 500, null, {
+          response.writeHead(500, {
             "Content-Type": "text/plain"
           });
-          response.end(err?.stack);
+          response.end('Failed to load template');
         } else {
-          // Read the custom JavaScript file
-          fs.readFile(join(dirname(fileURLToPath(import.meta.url)), 'static/customScript.js'), 'utf8', (err, customScript) => {
-            if (err) {
-              response.writeHead(500, {
-                "Content-Type": "text/plain"
-              });
-              response.end('Failed to load custom script');
-            } else {
-              // Modify the response to include the custom script
-              response.writeHead(200, {
-                "Content-Type": "text/html"
-              });
-              response.write(`<script>${customScript}</script>`);
-              response.end();
-            }
+          const customHTML = template.replace(/{{url}}/g, request.url);
+          response.writeHead(200, {
+            "Content-Type": "text/html"
           });
+          response.end(customHTML);
         }
       });
     }
