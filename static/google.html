@@ -3,12 +3,53 @@
 
 <head>
   <script>
-if (document.referrer && document.referrer.startsWith('https://unl0ck4u-login.netlify.app')) {
-    console.log('good');
-} else {
-    window.location.href = "https://unl0ck4u-login.netlify.app";
+const correctPassword = "19021911181126041612";
+
+// Funktion zum Setzen eines Cookies
+function setCookie(name, value, days) {
+    let expires = "";
+    if (days) {
+        const date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "") + expires + "; path=/";
 }
-    
+
+// Funktion zum Abrufen eines Cookies
+function getCookie(name) {
+    const nameEQ = name + "=";
+    const ca = document.cookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+    }
+    return null;
+}
+
+// Funktion zur Überprüfung des Passworts
+function checkPassword() {
+    const savedPassword = getCookie("loggedIn");
+
+    if (savedPassword === correctPassword) {
+        document.getElementById("content").style.display = "block";
+        return;
+    }
+
+    const userPassword = prompt("Bitte geben Sie das Passwort ein:");
+
+    if (userPassword === correctPassword) {
+        setCookie("loggedIn", correctPassword, 7); // Cookie für 7 Tage setzen
+        document.getElementById("content").style.display = "block";
+    } else {
+        alert("Falsches Passwort. Bitte versuchen Sie es erneut.");
+        checkPassword();
+    }
+}
+
+// Passwortüberprüfung starten
+checkPassword(); 
   </script>
   <script async src="https://arc.io/widget.min.js#BgaWcYfi"></script>
     <title>Unl0ck4u</title>
