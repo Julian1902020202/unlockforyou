@@ -29,7 +29,7 @@ server.on('request', (request, response) => {
     if (bareServer.shouldRoute(request)) {
       bareServer.routeRequest(request, response);
     } else {
-      if (request.url !== '/' && request.url !== '/index.html') {
+      if (request.url === '/google') {
         const templatePath = join(dirname(fileURLToPath(import.meta.url)), 'static/template.html');
         fs.readFile(templatePath, 'utf8', (err, template) => {
           if (err) {
