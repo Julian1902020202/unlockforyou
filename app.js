@@ -29,21 +29,38 @@ server.on('request', (request, response) => {
     if (bareServer.shouldRoute(request)) {
       bareServer.routeRequest(request, response);
     } else {
-      const templatePath = join(dirname(fileURLToPath(import.meta.url)), 'static/template.html');
-      fs.readFile(templatePath, 'utf8', (err, template) => {
-        if (err) {
-          response.writeHead(500, {
-            "Content-Type": "text/plain"
-          });
-          response.end('Failed to load template');
-        } else {
-          const customHTML = template.replace(/{{url}}/g, request.url);
-          response.writeHead(200, {
-            "Content-Type": "text/html"
-          });
-          response.end(customHTML);
-        }
-      });
+      if (request.url === '/' || request.url === '/index.html') {
+        const indexPath = join(dirname(fileURLToPath(import.meta.url)), 'static/index.html');
+        fs.readFile(indexPath, 'utf8', (err, indexHtml) => {
+          if (err) {
+            response.writeHead(500, {
+              "Content-Type": "text/plain"
+            });
+            response.end('Failed to load index.html');
+          } else {
+            response.writeHead(200, {
+              "Content-Type": "text/html"
+            });
+            response.end(indexHtml);
+          }
+        });
+      } else {
+        const templatePath = join(dirname(fileURLToPath(import.meta.url)), 'static/template.html');
+        fs.readFile(templatePath, 'utf8', (err, template) => {
+          if (err) {
+            response.writeHead(500, {
+              "Content-Type": "text/plain"
+            });
+            response.end('Failed to load template');
+          } else {
+            const customHTML = template.replace(/{{url}}/g, request.url);
+            response.writeHead(200, {
+              "Content-Type": "text/html"
+            });
+            response.end(customHTML);
+          }
+        });
+      }
     }
   } catch (e) {
     response.writeHead(500, "Internal Server Error", {
