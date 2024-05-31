@@ -36,22 +36,41 @@ server.on('request', (request, response) => {
           });
           response.end(err?.stack);
         } else {
-          // Read the custom JavaScript file
-          fs.readFile(join(dirname(fileURLToPath(import.meta.url)), 'static/customScript.js'), 'utf8', (err, customScript) => {
-            if (err) {
-              response.writeHead(500, {
-                "Content-Type": "text/plain"
-              });
-              response.end('Failed to load custom script');
-            } else {
-              // Modify the response to include the custom script
-              response.writeHead(200, {
-                "Content-Type": "text/html"
-              });
-              response.write(`<script>${customScript}</script>`);
-              response.end();
-            }
-          });
+          const urlPath = new URL(request.url, `http://${request.headers.host}`).pathname;
+          const filePath = join(dirname(fileURLToPath(import.meta.url)), 'static', urlPath);
+
+          if (fs.existsSync(filePath) && filePath.endsWith('.html')) {
+            fs.readFile(filePath, 'utf8', (err, fileContent) => {
+              if (err) {
+                response.writeHead(500, {
+                  "Content-Type": "text/plain"
+                });
+                response.end('Failed to load file');
+              } else {
+                // Read the custom JavaScript file
+                fs.readFile(join(dirname(fileURLToPath(import.meta.url)), 'static/customScript.js'), 'utf8', (err, customScript) => {
+                  if (err) {
+                    response.writeHead(500, {
+                      "Content-Type": "text/plain"
+                    });
+                    response.end('Failed to load custom script');
+                  } else {
+                    // Modify the response to include the custom script
+                    response.writeHead(200, {
+                      "Content-Type": "text/html"
+                    });
+                    response.write(fileContent.replace('</body>', `<script>${customScript}</script></body>`));
+                    response.end();
+                  }
+                });
+              }
+            });
+          } else {
+            response.writeHead(404, {
+              "Content-Type": "text/plain"
+            });
+            response.end('Not Found');
+          }
         }
       });
     }
