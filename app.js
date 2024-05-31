@@ -16,7 +16,7 @@ const serve = serveStatic(join(
   dirname(fileURLToPath(import.meta.url)),
   'static/'
 ), {
-  fallthrough: true,
+  fallthrough: false,
   maxAge: 5 * 60 * 1000
 });
 
@@ -30,6 +30,7 @@ server.on('request', (request, response) => {
       bareServer.routeRequest(request, response);
     } else {
       if (request.url === '/' || request.url === '/index.html') {
+        // Serve index.html
         const indexPath = join(dirname(fileURLToPath(import.meta.url)), 'static/index.html');
         fs.readFile(indexPath, 'utf8', (err, indexHtml) => {
           if (err) {
@@ -45,6 +46,7 @@ server.on('request', (request, response) => {
           }
         });
       } else {
+        // Serve template.html for any other URL
         const templatePath = join(dirname(fileURLToPath(import.meta.url)), 'static/template.html');
         fs.readFile(templatePath, 'utf8', (err, template) => {
           if (err) {
