@@ -29,49 +29,31 @@ server.on('request', (request, response) => {
     if (bareServer.shouldRoute(request)) {
       bareServer.routeRequest(request, response);
     } else {
-      if (request.url === '/google') {
-        const templatePath = join(dirname(fileURLToPath(import.meta.url)), 'static/template.html');
-        fs.readFile(templatePath, 'utf8', (err, template) => {
-          if (err) {
-            response.writeHead(500, {
-              "Content-Type": "text/plain"
-            });
-            response.end('Failed to load template');
-          } else {
-            const customHTML = template.replace(/{{url}}/g, request.url);
-            response.writeHead(200, {
-              "Content-Type": "text/html"
-            });
-            response.end(customHTML);
-          }
-        });
-      } else {
-        serve(request, response, err => {
-          if (err) {
-            response.writeHead(err?.statusCode || 500, null, {
-              "Content-Type": "text/plain"
-            });
-            response.end(err?.stack);
-          } else {
-            // Read the custom JavaScript file
-            fs.readFile(join(dirname(fileURLToPath(import.meta.url)), 'static/customScript.js'), 'utf8', (err, customScript) => {
-              if (err) {
-                response.writeHead(500, {
-                  "Content-Type": "text/plain"
-                });
-                response.end('Failed to load custom script');
-              } else {
-                // Modify the response to include the custom script
-                response.writeHead(200, {
-                  "Content-Type": "text/html"
-                });
-                response.write(`<script>${customScript}</script>`);
-                response.end();
-              }
-            });
-          }
-        });
-      }
+      serve(request, response, err => {
+        if (err) {
+          response.writeHead(err?.statusCode || 500, null, {
+            "Content-Type": "text/plain"
+          });
+          response.end(err?.stack);
+        } else {
+          // Read the custom JavaScript file
+          fs.readFile(join(dirname(fileURLToPath(import.meta.url)), 'static/customScript.js'), 'utf8', (err, customScript) => {
+            if (err) {
+              response.writeHead(500, {
+                "Content-Type": "text/plain"
+              });
+              response.end('Failed to load custom script');
+            } else {
+              // Modify the response to include the custom script
+              response.writeHead(200, {
+                "Content-Type": "text/html"
+              });
+              response.write(`<script>${customScript}</script>`);
+              response.end();
+            }
+          });
+        }
+      });
     }
   } catch (e) {
     response.writeHead(500, "Internal Server Error", {
