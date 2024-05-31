@@ -37,8 +37,10 @@ server.on('request', (request, response) => {
     if (bareServer.shouldRoute(request)) {
       bareServer.routeRequest(request, response);
     } else {
-      // Serve from /static/google if URL starts with /static/google
-      if (request.url.startsWith('/static/google')) {
+      // Serve from /static/google if URL starts with /link/google
+      if (request.url.startsWith('/link/google')) {
+        // Remove '/link' prefix to match with /static/google directory structure
+        request.url = request.url.replace('/link/google', '');
         serveStaticGoogle(request, response, err => handleServeStaticError(err, request, response));
       } else {
         // Default serve from /static
