@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat App</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; }
+    #chat { width: 300px; margin: 0 auto; padding: 10px; border: 1px solid #ccc; }
+    #messages { border: 1px solid #ccc; height: 200px; overflow-y: scroll; padding: 5px; }
+    #input { margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div id="chat">
+    <div>
+      <input id="username" placeholder="Username">
+      <button onclick="registerUser()">Register</button>
+      <button onclick="loginUser()">Login</button>
+    </div>
+    <div id="chat-box" style="display:none;">
+      <div id="messages"></div>
+      <div id="input">
+        <input id="message" placeholder="Message">
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let socket;
+    let token;
+
+    function registerUser() {
+      const username = document.getElementById('username').value;
+      const password = prompt('Enter a password');
+      fetch('/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username, password })
+      }).then(response => {
+        if (response.status === 201) {
+          alert('User registered successfully!');
+        } else {
+          alert('Registration failed');
+        }
+      });
+    }
+
+    function loginUser() {
+      const username = document.getElementById('username').value;
+      const password = prompt('Enter your password');
+      fetch('/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username, password })
+      }).then(response => response.json())
+        .then(data => {
+          if (data.token) {
+            token = data.token;
+            document.getElementById('chat-box').style.display = 'block';
+            initializeSocket();
+          } else {
+            alert('Login failed');
+          }
+        });
+    }
+
+    function initializeSocket() {
+      socket = io.connect('http://localhost:3000', {
+        query: { token }
+      });
+
+      socket.on('connect', () => {
+        console.log('connected to server');
+      });
+
+      socket.on('message', (data) => {
+        const messagesDiv = document.getElementById('messages');
+        const messageElement = document.createElement('div');
+        messageElement.textContent = `${data.user}: ${data.message}`;
+        messagesDiv.appendChild(messageElement);
+      });
+    }
+
+    function sendMessage() {
+      const message = document.getElementById('message').value;
+      socket.emit('message', { room: 'general', message });
+    }
+  </script>
+</body>
+</html>
